@@ -1,21 +1,17 @@
-﻿# CMakeList.txt: Cpp-Project-Health-Checker 的 CMake 專案，在此包含來源及定義
-# 專案專屬邏輯。
-#
-cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required(VERSION 3.20)
 
-# 如果支援，則為 MSVC 編譯器啟用熱重新載入。
-if (POLICY CMP0141)
-  cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-endif()
+project(CppProjectHealthChecker LANGUAGES CXX)
 
-project ("Cpp-Project-Health-Checker")
+add_executable(project_health_checker
+    src/main.cpp
+    src/ProjectValidator.cpp
+)
 
-# 將來源新增到此專案的可執行檔。
-add_executable (Cpp-Project-Health-Checker "Cpp-Project-Health-Checker.cpp" "Cpp-Project-Health-Checker.h")
+target_compile_features(project_health_checker
+    PRIVATE cxx_std_20
+)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET Cpp-Project-Health-Checker PROPERTY CXX_STANDARD 20)
-endif()
-
-# TODO: 新增測試，並視需要安裝目標。
+target_include_directories(project_health_checker
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
