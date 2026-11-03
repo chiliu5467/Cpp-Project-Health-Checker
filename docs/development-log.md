@@ -51,3 +51,59 @@ My previous Python automation projects used `subprocess.run()` and process retur
 I also applied C++ exception handling and `std::filesystem` to distinguish project validation failures from filesystem operation errors.
 
 Overall, this project strengthened my understanding of modular application design, command-line interfaces, and reliable error reporting.
+
+
+
+# Week 13 Day 2 ¡X Filesystem Testing & Refactoring
+
+**Date:** 2026-11-03
+
+## Testing Architecture
+
+I designed filesystem validation tests using isolated test directories instead of depending on existing project directories.
+
+Each test creates the required files and directories to simulate a specific scenario, such as a valid project or a project with missing required files.
+
+The test environment is cleaned up after execution to avoid leaving temporary files in the repository.
+
+I separated different scenarios into individual test functions, such as `TestValidProject()` and `TestMissingReadme()`, to improve readability, maintainability, and debugging.
+
+This approach also helps reduce dependencies between test cases.
+
+## Debugging Notes
+
+At the beginning, I was unsure how to generate test data and organize reusable testing utilities.
+
+I started by implementing the valid-project test case to understand the basic setup and validation process.
+
+After successfully implementing the first test, I gradually added additional scenarios.
+
+Once the test cases were working, I identified duplicated code and extracted reusable helper functions.
+
+This allowed me to refactor the test implementation without introducing unnecessary complexity at the beginning.
+
+An important follow-up is to rerun all tests after refactoring to ensure that the expected behavior remains unchanged.
+
+## Compilation vs. Correctness
+
+Successful compilation does not guarantee that a program behaves correctly.
+
+A compiler checks whether the code satisfies language and type requirements, while a linker resolves the symbols needed to build the executable.
+
+However, neither process can generally determine whether the application fulfills its intended requirements.
+
+For example, a filesystem validator may compile successfully but return an incorrect result when a required file is missing or has the wrong type.
+
+Automated tests help verify the program's behavior across valid, invalid, and edge-case inputs.
+
+## What I Learned
+
+Today, I practiced designing isolated filesystem tests using temporary directories and test-specific data.
+
+I learned why separating test cases into individual functions improves debugging and maintainability, and why test isolation is necessary for reliable results.
+
+I also practiced incremental development: implementing a working test first, adding more scenarios, and then refactoring duplicated logic into reusable functions.
+
+Most importantly, I reinforced the distinction between successful compilation and correct runtime behavior.
+
+These concepts will support the next stage of integrating automated tests into a CI pipeline.
