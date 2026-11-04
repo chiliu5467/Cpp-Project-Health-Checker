@@ -26,44 +26,35 @@ target_link_libraries(project_health_checker
     PRIVATE project_validator
 )
 
-# 3. Test executable
-add_executable(project_validator_tests
-    tests/test_project_validator.cpp
-)
+# 3. CTest integration
+include(CTest)
 
-target_link_libraries(project_validator_tests
-    PRIVATE project_validator
-)
+if(BUILD_TESTING)
 
-# 4. CTest integration
-enable_testing()
+    # Test executable
+    add_executable(project_validator_tests
+        tests/test_project_validator.cpp
+    )
 
-add_test(
-    NAME ValidProject
-    COMMAND project_validator_tests ValidProject
-)
+    target_link_libraries(project_validator_tests
+        PRIVATE project_validator
+    )
 
-add_test(
-    NAME MissingReadme
-    COMMAND project_validator_tests MissingReadme
-)
+    # Register test cases
+    foreach(test_name IN ITEMS
+        ValidProject
+        MissingReadme
+        MissingCMake
+        MissingSrc
+        InvalidPath
+        WrongFileType
+    )
+        add_test(
+            NAME ${test_name}
+            COMMAND
+                $<TARGET_FILE:project_validator_tests>
+                ${test_name}
+        )
+    endforeach()
 
-add_test(
-    NAME MissingCMake
-    COMMAND project_validator_tests MissingCMake
-)
-
-add_test(
-    NAME MissingSrc
-    COMMAND project_validator_tests MissingSrc
-)
-
-add_test(
-    NAME InvalidPath
-    COMMAND project_validator_tests InvalidPath
-)
-
-add_test(
-    NAME WrongFileType
-    COMMAND project_validator_tests WrongFileType
-)
+endif()

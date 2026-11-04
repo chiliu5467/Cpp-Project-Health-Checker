@@ -1,0 +1,45 @@
+
+name: C++ Build and Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up MSVC compiler environment
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+
+      # 3. Configure Debug
+      - name: Configure Debug
+        run: cmake --preset x64-debug
+
+      # 4. Build Debug
+      - name: Build Debug
+        run: cmake --build --preset x64-debug
+
+      # 5. Test Debug
+      - name: Run Debug Tests
+        run: ctest --preset x64-debug
+
+      # 6. Configure Release
+      - name: Configure Release
+        run: cmake --preset x64-release
+
+      # 7. Build Release
+      - name: Build Release
+        run: cmake --build --preset x64-release
+
+      # 8. Test Release
+      - name: Run Release Tests
+        run: ctest --preset x64-release
