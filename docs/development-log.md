@@ -107,3 +107,60 @@ I also practiced incremental development: implementing a working test first, add
 Most importantly, I reinforced the distinction between successful compilation and correct runtime behavior.
 
 These concepts will support the next stage of integrating automated tests into a CI pipeline.
+
+
+## Week 13 Day 3 ¡X GitHub Actions CI Integration
+
+### 1. CI Architecture
+
+GitHub Actions automates the build and testing process whenever code is pushed to GitHub or a pull request is created.
+
+The workflow is defined in `.github/workflows/ci.yml` and follows these steps:
+
+1. Check out the repository.
+2. Set up the MSVC compiler environment.
+3. Configure the project using CMake Presets.
+4. Build the Debug configuration.
+5. Run Debug tests using CTest.
+6. Configure and build the Release configuration.
+7. Run Release tests using CTest.
+
+I also added `buildPresets` and `testPresets` to `CMakePresets.json`.
+
+This allows both local development and GitHub Actions to use consistent build and test configurations without hardcoding build directory paths in the workflow.
+
+If the build directory changes, I can update the Presets without modifying the corresponding workflow commands.
+
+### 2. Debugging Notes
+
+I did not encounter any major issues during today's CI integration.
+
+Before creating the workflow, I verified that the existing tests worked locally.
+
+I then added Build Presets and Test Presets, updated the GitHub Actions YAML file to use these presets, and pushed the changes to GitHub.
+
+After the workflow completed successfully, I inspected the GitHub Actions logs to verify the test results.
+
+Results:
+
+| Configuration | Tests Passed | Tests Failed |
+|---|---|---|
+| Debug | 6 | 0 |
+| Release | 6 | 0 |
+| Total | 12 | 0 |
+
+Both configurations completed successfully on the Windows GitHub Actions runner.
+
+### 3. What I Learned
+
+A successful local build does not guarantee that the same project will build successfully on another machine.
+
+Different environments may use different compilers, generators, dependencies, or system configurations.
+
+For example, Ninja is a single-configuration generator, while the Visual Studio CMake generator supports multiple configurations.
+
+Even when using Visual Studio as an IDE, the actual generator depends on the CMake configuration.
+
+I learned that CMake Presets help maintain consistent build settings, while GitHub Actions provides an independent environment to verify that the project can be configured, built, and tested successfully.
+
+This makes the project more reliable and easier to maintain.
