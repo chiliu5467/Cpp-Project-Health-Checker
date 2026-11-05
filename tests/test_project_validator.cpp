@@ -107,7 +107,7 @@ bool TestValidProject()
 
     bool cleanupSuccess = CleanupTestDirectory(testPath);
 
-    return result.success && cleanupSuccess;
+    return result.status == CheckStatus::Pass && cleanupSuccess;
 }
 
 bool TestMissingReadme()
@@ -131,15 +131,22 @@ bool TestMissingReadme()
     CheckResult result = CheckProject(testPath);
 
     bool hasMissingReadme =
-        std::find(
-            result.failedItems.begin(),
-            result.failedItems.end(),
-            "README.md"
-        ) != result.failedItems.end();
+        std::find_if(
+            result.diagnostics.begin(),
+            result.diagnostics.end(),
+            [](const Diagnostic& diagnostic)
+            {
+                return diagnostic.item == "README.md" &&
+                    diagnostic.status == CheckStatus::Fail &&
+                    diagnostic.message == "Required file is missing";
+            }
+        ) != result.diagnostics.end();
 
     bool cleanupSuccess = CleanupTestDirectory(testPath);
 
-    return !result.success && cleanupSuccess && hasMissingReadme;
+    return result.status == CheckStatus::Fail &&
+        cleanupSuccess &&
+        hasMissingReadme;
 }
 
 bool TestMissingCMake()
@@ -163,15 +170,22 @@ bool TestMissingCMake()
     CheckResult result = CheckProject(testPath);
 
     bool hasMissingCmake =
-        std::find(
-            result.failedItems.begin(),
-            result.failedItems.end(),
-            "CMakeLists.txt"
-        ) != result.failedItems.end();
+        std::find_if(
+            result.diagnostics.begin(),
+            result.diagnostics.end(),
+            [](const Diagnostic& diagnostic)
+            {
+                return diagnostic.item == "CMakeLists.txt" &&
+                    diagnostic.status == CheckStatus::Fail &&
+                    diagnostic.message == "Required file is missing";
+            }
+        ) != result.diagnostics.end();
 
     bool cleanupSuccess = CleanupTestDirectory(testPath);
 
-    return !result.success && cleanupSuccess && hasMissingCmake;
+    return result.status == CheckStatus::Fail &&
+        cleanupSuccess &&
+        hasMissingCmake;
 }
 
 bool TestMissingSrc()
@@ -194,15 +208,22 @@ bool TestMissingSrc()
     CheckResult result = CheckProject(testPath);
 
     bool hasMissingSrc =
-        std::find(
-            result.failedItems.begin(),
-            result.failedItems.end(),
-            "src/"
-        ) != result.failedItems.end();
+        std::find_if(
+            result.diagnostics.begin(),
+            result.diagnostics.end(),
+            [](const Diagnostic& diagnostic)
+            {
+                return diagnostic.item == "src/" &&
+                    diagnostic.status == CheckStatus::Fail &&
+                    diagnostic.message == "Required directory is missing";
+            }
+        ) != result.diagnostics.end();
 
     bool cleanupSuccess = CleanupTestDirectory(testPath);
 
-    return !result.success && cleanupSuccess && hasMissingSrc;
+    return result.status == CheckStatus::Fail &&
+        cleanupSuccess &&
+        hasMissingSrc;
 }
 
 bool TestInvalidPath()
@@ -220,7 +241,7 @@ bool TestInvalidPath()
 
     CheckResult result = CheckProject(testPath);
 
-    return !result.success;
+    return result.status == CheckStatus::Error;
 }
 
 bool TestWrongFileType()
@@ -253,15 +274,70 @@ bool TestWrongFileType()
     CheckResult result = CheckProject(testPath);
 
     bool hasWrongReadme =
-        std::find(
-            result.failedItems.begin(),
-            result.failedItems.end(),
-            "README.md"
-        ) != result.failedItems.end();
+        std::find_if(
+            result.diagnostics.begin(),
+            result.diagnostics.end(),
+            [](const Diagnostic& diagnostic)
+            {
+                return diagnostic.item == "README.md" &&
+                    diagnostic.status == CheckStatus::Fail &&
+                    diagnostic.message == "Expected a regular file, but found a directory";
+            }
+        ) != result.diagnostics.end();
 
     bool cleanupSuccess = CleanupTestDirectory(testPath);
 
-    return !result.success && hasWrongReadme && cleanupSuccess;
+    return result.status == CheckStatus::Fail &&
+        cleanupSuccess &&
+        hasWrongReadme;
+}
+
+bool TestMultipleMissingItems()
+{
+    fs::path testPath = "test_workspace_multiple_missing";
+    if (!CreateTestDirectory(testPath))
+    {
+        return false;
+    }
+    bool setupSuccess =
+        CreateSrcDirectory(testPath);
+
+    if (!setupSuccess)
+    {
+        CleanupTestDirectory(testPath);
+        return false;
+    }
+    CheckResult result = CheckProject(testPath);
+    bool hasMissingCmake =
+        std::find_if(
+            result.diagnostics.begin(),
+            result.diagnostics.end(),
+            [](const Diagnostic& diagnostic)
+            {
+                return diagnostic.item == "CMakeLists.txt" &&
+                    diagnostic.status == CheckStatus::Fail &&
+                    diagnostic.message == "Required file is missing";
+            }
+        ) != result.diagnostics.end();
+
+    bool hasMissingReadme =
+        std::find_if(
+            result.diagnostics.begin(),
+            result.diagnostics.end(),
+            [](const Diagnostic& diagnostic)
+            {
+                return diagnostic.item == "README.md" &&
+                    diagnostic.status == CheckStatus::Fail &&
+                    diagnostic.message == "Required file is missing";
+            }
+        ) != result.diagnostics.end();
+
+    bool cleanupSuccess = CleanupTestDirectory(testPath);
+
+    return result.status == CheckStatus::Fail &&
+        cleanupSuccess &&
+        hasMissingCmake &&
+        hasMissingReadme;
 }
 
 int main(int argc, char* argv[])
@@ -291,6 +367,9 @@ int main(int argc, char* argv[])
 
     if (testName == "WrongFileType")
         return TestWrongFileType() ? 0 : 1;
+
+    if (testName == "MultipleMissingItems")
+        return TestMultipleMissingItems() ? 0 : 1;
 
     std::cerr << "Unknown test case\n";
     return 2;

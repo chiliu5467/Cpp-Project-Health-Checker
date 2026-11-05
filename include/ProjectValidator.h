@@ -6,11 +6,24 @@
 
 namespace fs = std::filesystem;
 
+enum class CheckStatus
+{
+    Pass,
+    Fail,
+    Error
+};
+
+struct Diagnostic
+{
+    CheckStatus status;
+    std::string item;
+    std::string message;
+};
+
 struct CheckResult
 {
-    bool success = false;
-    bool filesystemError = false;
-    std::vector<std::string> failedItems;
+    CheckStatus status = CheckStatus::Pass;
+    std::vector<Diagnostic> diagnostics;
 };
 
 CheckResult CheckProject(

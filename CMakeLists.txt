@@ -48,6 +48,7 @@ if(BUILD_TESTING)
         MissingSrc
         InvalidPath
         WrongFileType
+        MultipleMissingItems
     )
         add_test(
             NAME ${test_name}
